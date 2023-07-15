@@ -1,0 +1,30 @@
+CREATE OR REPLACE FUNCTION check_email()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM MEMBER WHERE Email = NEW.Email) THEN
+    RAISE EXCEPTION '[Email dengan nama % telah terdaftar sebagai member, harap gunakan email lain]', NEW.Email;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_email
+BEFORE INSERT ON MEMBER
+FOR EACH ROW
+EXECUTE FUNCTION check_email();
+
+CREATE OR REPLACE FUNCTION registrasi_atlet()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO
+    ATLET_NON_KUALIFIKASI (ID_Atlet)
+  VALUES
+    (NEW.ID);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER registrasi_atlet
+AFTER INSERT ON ATLET
+FOR EACH ROW
+EXECUTE FUNCTION registrasi_atlet();
